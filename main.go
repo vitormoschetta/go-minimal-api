@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-sql-driver/mysql"
-
 	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
