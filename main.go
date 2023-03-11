@@ -37,6 +37,11 @@ func NewProduct(name string, price float64) Product {
 	}
 }
 
+func main() {
+	connectDB()
+	createRoutes()
+}
+
 func connectDB() {
 	var err error
 	db, err = sql.Open("mysql", cfg.FormatDSN())
@@ -140,11 +145,6 @@ func createRoutes() {
 	})
 
 	router.Run("localhost:8080")
-}
-
-func main() {
-	connectDB()
-	createRoutes()
 }
 
 func FindAll() ([]Product, error) {

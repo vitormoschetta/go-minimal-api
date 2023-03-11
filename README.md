@@ -12,7 +12,7 @@ This is a minimal API example using Go and MySQL.
 
 - Clone this repository
 - Install dependencies: `go mod tidy`
-- Run the database: `docker-compose up -d`
+- Run the database: `docker-compose up -d` (check architecture of your processor to use the correct image)
 - Run the API: `go run main.go`
 
 ## Usage
@@ -27,7 +27,7 @@ curl --location 'http://localhost:8080/products'
 curl --location 'http://localhost:8080/products' \
 --header 'Content-Type: application/json' \
 --data '{    
-    "name": "MANGEIGA",
+    "name": "Product 1",
     "price": 14
 }'
 ```
