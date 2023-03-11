@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/vitormoschetta/go-minimal-api/pkg/vithor"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -38,6 +39,7 @@ func NewProduct(name string, price float64) Product {
 }
 
 func main() {
+	vithor.Printest()
 	connectDB()
 	createRoutes()
 }
