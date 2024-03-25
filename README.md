@@ -1,7 +1,7 @@
 # Get Started
 
 ## Pre-requisites
-Docker
+Docker  
 Replace `<your-repository>` in `Makefile`
 
 ## Run
