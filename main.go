@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
 func health(w http.ResponseWriter, r *http.Request) {
+	log.Println("Health check")
 	fmt.Fprintf(w, "OK")
 }
 
