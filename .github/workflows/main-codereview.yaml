@@ -25,4 +25,4 @@ jobs:
           tags: go-minimal-api:latest
 
       - name: Run AI Code Reviewer
-        run: docker run --rm -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} go-minimal-api:latest ./app
+        run: docker run --rm -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} vitormoschetta/go-minimal-api:latest ./app
