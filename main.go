@@ -9,8 +9,6 @@ import (
 )
 
 func health(w http.ResponseWriter, r *http.Request) {
-	var a int
-	fmt.Println(a)
 	log.Println("Health check")
 	fmt.Fprintf(w, "OK")
 }
