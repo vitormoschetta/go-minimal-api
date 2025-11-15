@@ -18,7 +18,6 @@ func welcome(w http.ResponseWriter, r *http.Request) {
 
 	name := r.URL.Query().Get("name")
 	if name == "" {
-		log.Println("No name provided")
 		name = "Guest"
 	}
 
@@ -29,6 +28,7 @@ func welcome(w http.ResponseWriter, r *http.Request) {
 func main() {
 	r := chi.NewRouter()
 	r.Get("/", health)
+	r.Get("/health", health)
 	r.Get("/welcome", welcome)
 	log.Println("Server is running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
