@@ -27,5 +27,6 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", health)
 	r.HandleFunc("/welcome", welcome)
-	http.ListenAndServe(":8080", r)
+	log.Println("Server is running on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
