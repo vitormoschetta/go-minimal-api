@@ -1,0 +1,340 @@
+---
+title: Padrões de Comentários
+description: Diretrizes para escrever comentários significativos, documentação inline e evitar ruído no código. Aplicar ao escrever ou revisar código para determinar quando adicionar ou remover comentários.
+tags: [comments, documentation, code-quality, inline-docs, code-review]
+---
+
+# Padrões de Comentários
+
+> **⚠️ OBRIGATÓRIO**: Esta regra define quando ADICIONAR e quando REMOVER comentários. Comentários devem agregar valor, não repetir o que o código já diz.
+
+---
+
+## Objetivo Duplo
+
+Esta regra tem dois propósitos igualmente importantes:
+
+1. **✅ ADICIONAR comentários** quando explicam o "POR QUÊ" e agregam valor
+2. **❌ REMOVER comentários** quando apenas repetem o óbvio e geram ruído
+
+---
+
+## Quando Aplicar Esta Regra
+
+### Durante Escrita de Código Novo:
+- **Sempre perguntar**: "Alguém entenderá o POR QUÊ desta decisão daqui a 6 meses?"
+- **Se NÃO**: Adicionar comentário explicando o contexto/motivo
+- **Se SIM**: Deixar o código falar por si mesmo
+
+### Durante Code Review:
+- Identificar código sem comentários que deveria tê-los (lógica complexa, decisões não-óbvias)
+- Identificar comentários desnecessários que poluem o código
+- Sugerir adição ou remoção conforme os critérios desta regra
+
+### Durante Refatoração:
+- Atualizar comentários que ficaram desatualizados
+- Remover comentários que o código refatorado tornou óbvios
+- Adicionar comentários se a refatoração introduziu lógica complexa
+
+---
+
+## Regra de Ouro
+
+**"Código diz COMO, comentários dizem POR QUÊ"**
+
+Comentários devem explicar:
+- **POR QUÊ** uma decisão foi tomada (lógica de negócio, restrições técnicas)
+- **O QUE** não é óbvio pelo código
+- **AVISOS** sobre casos extremos ou armadilhas
+
+Comentários **NÃO** devem explicar:
+- O que o código obviamente faz
+- Atribuições de variáveis
+- Chamadas de função que são auto-explicativas
+
+---
+
+## ❌ Comentários Ruins (Ruído)
+
+### 1. Ações Óbvias
+
+❌ **RUIM**:
+```go
+// Tenta criar o recurso no serviço primário
+result, err := primaryService.Create(ctx, data)
+
+// Fallback para serviço secundário
+result, err = secondaryService.Create(ctx, data)
+
+// Constrói a resposta
+response := Response{
+    ID: result.ID,
+}
+```
+
+✅ **BOM** (sem comentários necessários, código é auto-explicativo):
+```go
+result, err := primaryService.Create(ctx, data)
+if err != nil {
+    result, err = secondaryService.Create(ctx, data)
+}
+
+response := Response{
+    ID: result.ID,
+}
+```
+
+---
+
+### 2. Descrições Redundantes de Funções
+
+❌ **RUIM**:
+```go
+// Create creates a new user and returns the created user
+func (s *UserService) Create(ctx context.Context, req CreateUserRequest) (User, error)
+```
+
+✅ **BOM** (assinatura da função é auto-documentada):
+```go
+func (s *UserService) Create(ctx context.Context, req CreateUserRequest) (User, error)
+```
+
+**Exceção**: Funções exportadas em bibliotecas/pacotes públicos devem ter comentários godoc.
+
+---
+
+### 3. Comentários de Atribuição de Variáveis
+
+❌ **RUIM**:
+```go
+// Define o status como ativo
+status := "active"
+
+// Obtém o ID do usuário da requisição
+userID := req.UserID
+```
+
+✅ **BOM** (sem comentários necessários):
+```go
+status := "active"
+userID := req.UserID
+```
+
+---
+
+## ✅ Comentários Bons (Agregam Valor)
+
+### 1. Explicação de Lógica de Negócio
+
+✅ **BOM**:
+```go
+discount := 0.0 // Política comercial: sem desconto para primeira compra
+if user.PreviousPurchases > 0 {
+    discount = 0.1 // 10% para clientes recorrentes
+}
+```
+
+✅ **BOM**:
+```go
+// Detecção de fraude requer pelo menos 3 tentativas falhas em 5 minutos
+if failedAttempts >= 3 && timeSinceFirst < 5*time.Minute {
+    return ErrSuspiciousActivity
+}
+```
+
+---
+
+### 2. Restrições Técnicas
+
+✅ **BOM**:
+```go
+CreatedAt: time.Now().UTC(), // Sempre usar UTC para timestamps de API (RFC 3339)
+```
+
+✅ **BOM**:
+```go
+// API externa espera content como string JSON escapada, não objeto
+Content: contentJSON,
+```
+
+---
+
+### 3. TODOs com Contexto
+
+✅ **BOM**:
+```go
+// TODO: Obter configuração do usuário do banco de dados (Fase 2 - Sprint 5)
+defaultConfig := getHardcodedDefaults()
+```
+
+✅ **BOM**:
+```go
+// TODO: Substituir por padrão circuit breaker quando retry count > 3 (TICKET-1234)
+for i := 0; i < maxRetries; i++ {
+    // ...
+}
+```
+
+---
+
+### 4. Algoritmos Não-Óbvios
+
+✅ **BOM**:
+```go
+// Usar exponential backoff para evitar sobrecarregar o serviço
+// Fórmula: delay = baseDelay * 2^attempt (limitado a maxDelay)
+delay := min(baseDelay * (1 << attempt), maxDelay)
+time.Sleep(delay)
+```
+
+---
+
+### 5. Casos Extremos e Armadilhas
+
+✅ **BOM**:
+```go
+// String vazia é válida aqui - significa "usar valor padrão do sistema"
+if value == "" {
+    value = defaultValue
+}
+```
+
+✅ **BOM**:
+```go
+// IMPORTANTE: Deve chamar Close() mesmo se ocorrer erro, caso contrário há vazamento de recursos
+defer resource.Close()
+```
+
+---
+
+## Casos Especiais
+
+### 1. Funções Exportadas (API Pública)
+
+Funções exportadas **devem** ter comentários godoc:
+
+✅ **BOM**:
+```go
+// NewClient cria um novo client Fraud Copilot com a configuração fornecida.
+// Retorna erro se a base URL for inválida ou o HTTP client não puder ser criado.
+func NewClient(ctx context.Context, config configs.APIConfig) (Client, error) {
+    // ...
+}
+```
+
+---
+
+### 2. Structs Complexas
+
+Documentar campos não-óbvios:
+
+✅ **BOM**:
+```go
+type Config struct {
+    BaseURL string
+    Timeout time.Duration
+    
+    // WebhookID é específico do ambiente e deve ser obtido do painel admin
+    WebhookID string
+}
+```
+
+---
+
+### 3. Números Mágicos
+
+Sempre explicar números mágicos:
+
+❌ **RUIM**:
+```go
+if retries > 3 {
+    return err
+}
+```
+
+✅ **BOM**:
+```go
+const maxRetries = 3 // Baseado no SLA: 99.9% de taxa de sucesso em 3 tentativas
+
+if retries > maxRetries {
+    return err
+}
+```
+
+---
+
+## Manutenção de Comentários
+
+### Remover Comentários Desatualizados
+
+❌ **RUIM**:
+```go
+// TODO: Implementar lógica de retry
+// Isso será feito na Fase 2
+// Update: Agora usando exponential backoff
+func sendRequest() {
+    // Lógica de retry com exponential backoff
+    for i := 0; i < 3; i++ {
+        // ...
+    }
+}
+```
+
+✅ **BOM**:
+```go
+func sendRequest() {
+    for i := 0; i < 3; i++ {
+        // ...
+    }
+}
+```
+
+---
+
+## Árvore de Decisão
+
+```
+Devo adicionar um comentário?
+│
+├─ É óbvio pelo código?
+│  └─ SIM → Não comente
+│
+├─ Explica POR QUÊ (não O QUE)?
+│  └─ SIM → Bom comentário
+│
+├─ É um TODO com contexto?
+│  └─ SIM → Bom comentário
+│
+├─ É um aviso sobre caso extremo?
+│  └─ SIM → Bom comentário
+│
+└─ É uma explicação de número mágico?
+   └─ SIM → Bom comentário
+```
+
+---
+
+## ✅ Checklist
+
+Antes de fazer commit, revisar TODO o código (novo e existente):
+
+### Adicionar Comentários Quando:
+- [ ] Houver lógica de negócio não-óbvia (explicar POR QUÊ)
+- [ ] Houver restrições técnicas ou decisões arquiteturais
+- [ ] Houver números mágicos sem explicação
+- [ ] Houver TODOs (sempre com contexto: JIRA, fase, motivo)
+- [ ] Houver casos extremos ou armadilhas (IMPORTANTE, CUIDADO, etc)
+- [ ] Houver funções exportadas sem documentação godoc
+- [ ] Houver algoritmos complexos ou não-óbvios
+- [ ] Houver workarounds temporários (explicar motivo e próximos passos)
+
+### Remover Comentários Quando:
+- [ ] Apenas repetem o que o código já diz
+- [ ] Descrevem ações óbvias (atribuições, chamadas de função simples)
+- [ ] Estão desatualizados ou não refletem o código atual
+- [ ] São TODOs já implementados
+- [ ] São comentários de debug/desenvolvimento que esqueceram de remover
+
+---
+
+**Última Atualização**: 4 de Novembro de 2025
