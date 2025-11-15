@@ -1,0 +1,287 @@
+---
+title: Padrões de Comentários
+description: Diretrizes universais para escrever comentários significativos e evitar ruído no código. Aplicável a qualquer linguagem de programação.
+tags: [comments, documentation, code-quality, inline-docs, code-review, language-agnostic]
+---
+
+# Padrões de Comentários
+
+> **⚠️ OBRIGATÓRIO**: Esta regra define quando ADICIONAR e quando REMOVER comentários. Comentários devem agregar valor, não repetir o que o código já diz.
+
+> **📝 Nota**: Esta é uma regra genérica aplicável a qualquer linguagem. Para exemplos específicos, consulte as regras de comentários por linguagem (ex: `comments-standards-golang.mdc`).
+
+---
+
+## Objetivo Duplo
+
+Esta regra tem dois propósitos igualmente importantes:
+
+1. **✅ ADICIONAR comentários** quando explicam o "POR QUÊ" e agregam valor
+2. **❌ REMOVER comentários** quando apenas repetem o óbvio e geram ruído
+
+---
+
+## Quando Aplicar Esta Regra
+
+### Durante Escrita de Código Novo:
+- **Sempre perguntar**: "Alguém entenderá o POR QUÊ desta decisão daqui a 6 meses?"
+- **Se NÃO**: Adicionar comentário explicando o contexto/motivo
+- **Se SIM**: Deixar o código falar por si mesmo
+
+### Durante Code Review:
+- Identificar código sem comentários que deveria tê-los (lógica complexa, decisões não-óbvias)
+- Identificar comentários desnecessários que poluem o código
+- Sugerir adição ou remoção conforme os critérios desta regra
+
+### Durante Refatoração:
+- Atualizar comentários que ficaram desatualizados
+- Remover comentários que o código refatorado tornou óbvios
+- Adicionar comentários se a refatoração introduziu lógica complexa
+
+---
+
+## Regra de Ouro
+
+**"Código diz COMO, comentários dizem POR QUÊ"**
+
+### Comentários devem explicar:
+- **POR QUÊ** uma decisão foi tomada (lógica de negócio, restrições técnicas)
+- **O QUE** não é óbvio pelo código
+- **AVISOS** sobre casos extremos ou armadilhas
+- **CONTEXTO** que não pode ser expresso no código
+
+### Comentários **NÃO** devem explicar:
+- O que o código obviamente faz
+- Atribuições de variáveis simples
+- Chamadas de função que são auto-explicativas
+- Sintaxe básica da linguagem
+
+---
+
+## ❌ Tipos de Comentários Ruins (Ruído)
+
+### 1. Ações Óbvias
+Comentários que apenas narram o que está acontecendo no código sem adicionar contexto.
+
+**Exemplos comuns:**
+- "Define a variável X"
+- "Chama a função Y"
+- "Retorna o resultado"
+- "Loop pelos itens"
+
+### 2. Descrições Redundantes
+Comentários que repetem exatamente o nome da função/método/classe.
+
+**Exemplos comuns:**
+- "Create cria um novo usuário" (quando a função já se chama `create`)
+- "Valida os dados de entrada" (quando a função já se chama `validate`)
+
+### 3. Comentários de Debug Esquecidos
+Comentários temporários que deveriam ter sido removidos.
+
+**Exemplos comuns:**
+- "// console.log()"
+- "// TODO: testar isso"
+- "// comentei isso porque estava quebrando"
+- "// FIXME"
+
+### 4. Comentários Desatualizados
+Comentários que não refletem mais o código atual.
+
+**Exemplo:**
+```
+// Comentário: "Retorna 3 itens"
+// Código: retorna todos os itens sem limite
+```
+
+---
+
+## ✅ Tipos de Comentários Bons (Agregam Valor)
+
+### 1. Explicação de Lógica de Negócio
+Comentários que explicam **por que** uma regra de negócio existe.
+
+**Quando usar:**
+- Políticas comerciais não-óbvias
+- Regras de cálculo complexas
+- Restrições de domínio específicas
+- Decisões baseadas em requisitos do produto
+
+### 2. Restrições Técnicas
+Comentários que explicam limitações técnicas ou decisões arquiteturais.
+
+**Quando usar:**
+- Limitações de APIs externas
+- Workarounds para bugs de terceiros
+- Restrições de performance
+- Compatibilidade com sistemas legados
+- Padrões técnicos obrigatórios (RFC, ISO, etc)
+
+### 3. TODOs com Contexto
+Tarefas futuras sempre acompanhadas de contexto rico.
+
+**Formato recomendado:**
+```
+TODO: [O QUE fazer] ([QUANDO/POR QUÊ] + [TICKET/REFERÊNCIA])
+```
+
+**Exemplos:**
+- "TODO: Implementar cache (Fase 2 após migração do banco - TICKET-123)"
+- "TODO: Refatorar para usar padrão X (aguardando decisão arquitetural - RFC-456)"
+
+### 4. Algoritmos Não-Óbvios
+Comentários que explicam lógica matemática ou algorítmica complexa.
+
+**Quando usar:**
+- Fórmulas matemáticas
+- Algoritmos de otimização
+- Lógica de retry/backoff
+- Manipulação de bits
+- Cálculos financeiros
+
+### 5. Casos Extremos e Armadilhas
+Avisos sobre comportamentos não-óbvios ou perigosos.
+
+**Quando usar:**
+- Valores especiais válidos (null, empty, zero)
+- Ordem de execução crítica
+- Side effects não-óbvios
+- Vazamentos de recursos
+- Race conditions
+
+### 6. Documentação de API Pública
+Documentação formal para interfaces públicas/exportadas.
+
+**Quando usar:**
+- Funções/métodos exportados
+- Classes/interfaces públicas
+- Parâmetros e retornos
+- Exceções/erros possíveis
+- Exemplos de uso
+
+### 7. Números Mágicos
+Sempre explicar constantes numéricas não-óbvias.
+
+**Quando usar:**
+- Timeouts e limites
+- Tamanhos de buffer
+- Taxas e percentuais
+- Códigos de status
+- Versões de protocolo
+
+---
+
+## Árvore de Decisão
+
+```
+Devo adicionar um comentário?
+│
+├─ É óbvio pelo código?
+│  └─ SIM → Não comente
+│
+├─ Explica POR QUÊ (não O QUE)?
+│  └─ SIM → Bom comentário
+│
+├─ É um TODO com contexto completo?
+│  └─ SIM → Bom comentário
+│
+├─ É um aviso sobre caso extremo/armadilha?
+│  └─ SIM → Bom comentário
+│
+├─ É uma explicação de número mágico?
+│  └─ SIM → Bom comentário
+│
+├─ Explica restrição técnica ou decisão arquitetural?
+│  └─ SIM → Bom comentário
+│
+└─ É documentação de API pública?
+   └─ SIM → Bom comentário
+```
+
+---
+
+## ✅ Checklist
+
+Antes de fazer commit, revisar TODO o código (novo e existente):
+
+### Adicionar Comentários Quando:
+- [ ] Houver lógica de negócio não-óbvia (explicar POR QUÊ)
+- [ ] Houver restrições técnicas ou decisões arquiteturais
+- [ ] Houver números mágicos sem explicação
+- [ ] Houver TODOs (sempre com contexto: ticket, fase, motivo)
+- [ ] Houver casos extremos ou armadilhas (IMPORTANTE, CUIDADO, etc)
+- [ ] Houver APIs públicas/exportadas sem documentação
+- [ ] Houver algoritmos complexos ou não-óbvios
+- [ ] Houver workarounds temporários (explicar motivo e próximos passos)
+- [ ] Houver decisões contra-intuitivas ou surpreendentes
+- [ ] Houver dependências com comportamento não-documentado
+
+### Remover Comentários Quando:
+- [ ] Apenas repetem o que o código já diz
+- [ ] Descrevem ações óbvias (atribuições, chamadas de função simples)
+- [ ] Estão desatualizados ou não refletem o código atual
+- [ ] São TODOs já implementados
+- [ ] São comentários de debug/desenvolvimento esquecidos
+- [ ] São comentários que foram resolvidos por refatoração (código ficou mais claro)
+
+---
+
+## Manutenção de Comentários
+
+### Princípios:
+1. **Comentários são parte do código**: devem evoluir junto com ele
+2. **Comentários desatualizados são piores que ausência de comentários**: geram confusão
+3. **Refatoração pode eliminar necessidade de comentários**: código claro > comentários
+
+### Ao Refatorar:
+- ✅ Atualizar comentários afetados
+- ✅ Remover comentários que se tornaram óbvios
+- ✅ Adicionar comentários se nova lógica for complexa
+- ❌ Nunca deixar comentários desatualizados
+
+---
+
+## Boas Práticas Universais
+
+### 1. Seja Conciso mas Completo
+- Use frases curtas e diretas
+- Inclua todas as informações necessárias
+- Evite prolixidade desnecessária
+
+### 2. Mantenha Consistência
+- Use o mesmo estilo em todo o projeto
+- Siga convenções da linguagem (se houver)
+- Mantenha formatação uniforme
+
+### 3. Use Linguagem Clara
+- Escreva em português correto (ou idioma do time)
+- Evite jargões desnecessários
+- Prefira termos precisos
+
+### 4. Adicione Referências
+- Links para documentação externa
+- Números de tickets/issues
+- RFCs e especificações técnicas
+- Commit hashes relevantes
+
+### 5. Destaque Informações Críticas
+- Use marcadores: IMPORTANTE, CUIDADO, NOTA
+- Destaque side effects
+- Avise sobre performance
+- Sinalize deprecated code
+
+---
+
+## Aplicação por Linguagem
+
+Esta regra genérica se aplica a todas as linguagens. Para convenções específicas e exemplos concretos, consulte:
+
+- `comments-standards-golang.mdc` - Padrões para Go (godoc, exported functions, etc)
+- `comments-standards-python.mdc` - Padrões para Python (docstrings, PEP 257, etc)
+- `comments-standards-javascript.mdc` - Padrões para JavaScript/TypeScript (JSDoc, etc)
+- *(adicione outras conforme necessário)*
+
+---
+
+**Última Atualização**: 15 de Novembro de 2025  
+**Versão**: 2.0 (Genérica - Language Agnostic)

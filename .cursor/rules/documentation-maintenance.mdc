@@ -1,0 +1,133 @@
+---
+title: Manutenção de Documentação
+description: Diretrizes para escrever comentários significativos, documentação inline e evitar ruído no código. Aplicar ao escrever ou revisar código para determinar quando adicionar ou remover comentários.
+tags: [documentation, maintenance, code-review, code-quality]
+---
+
+# Manutenção de Documentação
+
+> **⚠️ OBRIGATÓRIO**: A documentação deve evoluir junto com o código. Toda mudança significativa requer revisão da documentação.
+
+---
+
+## Regra: Princípio de Documentação Primeiro
+
+**Sempre que você fizer QUALQUER uma das seguintes mudanças, você DEVE revisar e atualizar a documentação:**
+
+### 1. Mudanças de Código que Requerem Atualização de Documentação
+
+#### ✅ Novas Funcionalidades
+- [ ] Atualizar `CHANGELOG.md` com a nova funcionalidade
+- [ ] Atualizar arquivos de regras relevantes em `.cursor/rules/`
+- [ ] Atualizar `README.md` se afetar o uso
+- [ ] Atualizar `docs/plan/action_plan.md` se afetar o roadmap
+- [ ] Criar/atualizar documentação de etapas em `docs/plan/steps/`
+
+#### ✅ Breaking Changes
+- [ ] Atualizar `CHANGELOG.md` com marcador **BREAKING CHANGE**
+- [ ] Atualizar arquivos de regras afetados em `.cursor/rules/`
+- [ ] Atualizar guia de migração (se existir)
+- [ ] Atualizar `README.md`
+
+#### ✅ Novas Convenções/Padrões
+- [ ] Criar ou atualizar arquivo de regra em `.cursor/rules/`
+- [ ] Atualizar `CHANGELOG.md`
+- [ ] Notificar equipe (se aplicável)
+
+#### ✅ Correções de Bugs
+- [ ] Atualizar `CHANGELOG.md` com a correção
+- [ ] Atualizar arquivo de regra se o bug foi causado por convenção pouco clara
+
+#### ✅ Mudanças de Arquitetura
+- [ ] Atualizar `docs/plan/action_plan.md`
+- [ ] Atualizar `.cursor/rules/project-structure.mdc`
+- [ ] Atualizar documentação de etapas relevantes
+- [ ] Atualizar `CHANGELOG.md`
+
+---
+
+## Sugestões Automáticas de Documentação
+
+### Comportamento do Agente AI
+
+**Ao fazer mudanças, o agente AI DEVE:**
+
+1. **Analisar Impacto**:
+   - Identificar quais arquivos de documentação são afetados
+   - Determinar se novas regras são necessárias
+
+2. **Atualizações Proativas de Documentação**:
+   - **SEMPRE verificar** se a documentação precisa de atualização após mudanças no código
+   - **ATUALIZAR AUTOMATICAMENTE** a documentação quando:
+     - Usuário explicitamente pedir revisão da documentação ("faltou atualizar algo?", "check docs", etc)
+     - Usuário fizer commit/push do código (implica aprovação de todas as mudanças)
+     - Usuário pedir descrição de PR (implica que a funcionalidade está completa)
+   - **PERGUNTAR ANTES de atualizar** a documentação quando:
+     - Usuário ainda está codificando ativamente (meio do desenvolvimento)
+     - Mudanças são experimentais ou exploratórias
+     - Usuário não indicou conclusão
+
+3. **Sugerir Atualizações**:
+   - Apresentar sugestões concretas para entradas no CHANGELOG
+   - Propor atualizações de arquivos de regras com texto exato
+   - Destacar potenciais conflitos com regras existentes
+   - **Lembrar proativamente**: "Esta mudança requer atualizar [arquivo]. Posso atualizar agora?"
+
+4. **Validar Consistência**:
+   - Verificar se o novo código segue as regras existentes
+   - Avisar sobre desvios das convenções
+   - Sugerir atualizações de regras se o padrão for melhor
+
+### Gatilhos para Verificação Automática de Documentação
+
+O agente AI DEVE verificar a documentação quando o usuário:
+- ✅ Pedir descrição de PR
+- ✅ Perguntar "faltou algo?", "está completo?", "precisa atualizar docs?"
+- ✅ Disser "commit", "push", "deploy"
+- ✅ Explicitamente pedir para atualizar documentação
+- ⚠️ Fizer mudanças arquiteturais (sugerir imediatamente)
+- ⚠️ Adicionar novas funcionalidades (sugerir imediatamente)
+
+---
+
+## Quando NÃO Atualizar Documentação
+
+Atualizações de documentação **NÃO** são necessárias para:
+- ❌ Refatoração interna sem mudança de comportamento
+- ❌ Correções de formatação/linting de código
+- ❌ Atualizações de versão de dependências (a menos que seja breaking)
+- ❌ Comentários ou documentação interna
+- ❌ Mudanças apenas em testes
+
+---
+
+## ✅ Checklist Rápido
+
+Toda vez que você fizer commit de código:
+
+1. **É voltado para o usuário?** → Atualizar README.md
+2. **É uma nova funcionalidade/correção?** → Atualizar CHANGELOG.md
+3. **É um novo padrão?** → Atualizar/criar arquivo de regra
+4. **É parte do roadmap?** → Atualizar action_plan.md
+5. **É breaking?** → Marcar claramente no CHANGELOG
+6. **Mensagens de teste estão em inglês?** → Todas as descrições de teste devem estar em inglês
+
+---
+
+## 💡 Melhores Práticas
+
+### Para o Agente AI:
+1. **Seja proativo**: Não espere o usuário perguntar sobre docs
+2. **Verificar em pedidos de descrição de PR**: Isso sinaliza conclusão da funcionalidade
+3. **Sugerir imediatamente**: Quando mudanças arquiteturais são feitas
+4. **Agrupar atualizações**: Atualizar todos os docs relacionados de uma vez (CHANGELOG + README + action_plan)
+
+### Para Desenvolvedores:
+1. **Esperar verificações automáticas**: AI vai lembrar sobre documentação
+2. **Usar frases gatilho**: "faltou algo?", "check docs", "está completo?"
+3. **Revisar sugestões**: Sempre revisar mudanças de documentação propostas pela AI
+
+---
+
+**Última Atualização**: 4 de Novembro de 2025  
+**Revisão**: Necessária antes de todo commit significativo
