@@ -1,0 +1,520 @@
+---
+title: Padrões de Comentários - Go
+description: Diretrizes específicas para comentários em Go, incluindo godoc, exported symbols e convenções da linguagem.
+tags: [comments, documentation, golang, go, godoc, code-review]
+applies_to: ["**/*.go"]
+---
+
+# Padrões de Comentários - Go
+
+> **⚠️ OBRIGATÓRIO**: Esta regra complementa `comments-standards.mdc` com exemplos e convenções específicas de Go.
+
+> **📚 Leitura Obrigatória**: Sempre consulte primeiro a regra genérica `comments-standards.mdc` para princípios universais.
+
+---
+
+## Convenções Específicas do Go
+
+### 1. Formato Godoc
+
+Todo símbolo exportado (começa com letra maiúscula) **DEVE** ter comentário godoc.
+
+**Formato padrão:**
+```
+// NomeDaFunção [descrição que começa com o nome do símbolo].
+```
+
+**Características:**
+- Comentário começa com o nome exato do símbolo
+- Usa frases completas (maiúscula inicial, ponto final)
+- Linha em branco separa parágrafos
+- Sem linha em branco entre comentário e declaração
+
+---
+
+## ❌ Comentários Ruins em Go
+
+### 1. Ações Óbvias
+
+❌ **RUIM**:
+```go
+// Tenta criar o recurso no serviço primário
+result, err := primaryService.Create(ctx, data)
+
+// Fallback para serviço secundário
+result, err = secondaryService.Create(ctx, data)
+
+// Constrói a resposta
+response := Response{
+    ID: result.ID,
+}
+```
+
+✅ **BOM** (sem comentários necessários):
+```go
+result, err := primaryService.Create(ctx, data)
+if err != nil {
+    result, err = secondaryService.Create(ctx, data)
+}
+
+response := Response{
+    ID: result.ID,
+}
+```
+
+---
+
+### 2. Descrições Redundantes
+
+❌ **RUIM**:
+```go
+// Create creates a new user and returns the created user
+func (s *UserService) Create(ctx context.Context, req CreateUserRequest) (User, error)
+```
+
+✅ **BOM**:
+```go
+// Create cria um novo usuário no sistema e envia email de boas-vindas.
+// Retorna erro se o email já estiver em uso ou se o serviço de email falhar.
+func (s *UserService) Create(ctx context.Context, req CreateUserRequest) (User, error)
+```
+
+---
+
+### 3. Comentários de Atribuição
+
+❌ **RUIM**:
+```go
+// Define o status como ativo
+status := "active"
+
+// Obtém o ID do usuário da requisição
+userID := req.UserID
+```
+
+✅ **BOM** (sem comentários):
+```go
+status := "active"
+userID := req.UserID
+```
+
+---
+
+## ✅ Comentários Bons em Go
+
+### 1. Explicação de Lógica de Negócio
+
+✅ **BOM**:
+```go
+discount := 0.0 // Política comercial: sem desconto para primeira compra
+if user.PreviousPurchases > 0 {
+    discount = 0.1 // 10% para clientes recorrentes
+}
+```
+
+✅ **BOM**:
+```go
+// Detecção de fraude requer pelo menos 3 tentativas falhas em 5 minutos
+// conforme definido no documento de segurança SECP-2024-03
+if failedAttempts >= 3 && timeSinceFirst < 5*time.Minute {
+    return ErrSuspiciousActivity
+}
+```
+
+---
+
+### 2. Restrições Técnicas
+
+✅ **BOM**:
+```go
+CreatedAt: time.Now().UTC(), // Sempre usar UTC para timestamps de API (RFC 3339)
+```
+
+✅ **BOM**:
+```go
+// API externa espera content como string JSON escapada, não objeto.
+// Ver documentação: https://docs.external-api.com/v2/payloads
+Content: contentJSON,
+```
+
+---
+
+### 3. TODOs com Contexto
+
+✅ **BOM**:
+```go
+// TODO: Obter configuração do usuário do banco de dados (Fase 2 - Sprint 5)
+// Ticket: PROJ-1234
+defaultConfig := getHardcodedDefaults()
+```
+
+✅ **BOM**:
+```go
+// TODO: Substituir por padrão circuit breaker quando retry count > 3
+// Referência: https://github.com/org/architecture-docs/blob/main/patterns/circuit-breaker.md
+// Ticket: ARCH-456
+for i := 0; i < maxRetries; i++ {
+    // ...
+}
+```
+
+---
+
+### 4. Algoritmos Não-Óbvios
+
+✅ **BOM**:
+```go
+// Usar exponential backoff para evitar sobrecarregar o serviço downstream.
+// Fórmula: delay = baseDelay * 2^attempt (limitado a maxDelay)
+// Baseado no padrão descrito em: https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+delay := min(baseDelay*(1<<attempt), maxDelay)
+time.Sleep(delay)
+```
+
+---
+
+### 5. Casos Extremos e Armadilhas
+
+✅ **BOM**:
+```go
+// String vazia é válida aqui - significa "usar valor padrão do sistema"
+if value == "" {
+    value = defaultValue
+}
+```
+
+✅ **BOM**:
+```go
+// IMPORTANTE: Deve chamar Close() mesmo se ocorrer erro, caso contrário há vazamento de recursos.
+// O defer garante execução mesmo em caso de panic.
+defer resource.Close()
+```
+
+---
+
+## Documentação Godoc por Tipo de Símbolo
+
+### 1. Funções e Métodos Exportados
+
+**Toda função/método exportado DEVE ter godoc.**
+
+✅ **BOM**:
+```go
+// NewClient cria um novo client HTTP configurado para comunicação com a API.
+// Retorna erro se baseURL for inválida ou apiKey for vazia.
+func NewClient(ctx context.Context, config ClientConfig) (*Client, error) {
+    // ...
+}
+```
+
+✅ **BOM** (com detalhes de parâmetros e retorno):
+```go
+// ProcessPayment processa um pagamento e retorna o ID da transação.
+// O valor deve ser positivo e em centavos (ex: 1050 para R$ 10,50).
+//
+// Retorna ErrInvalidAmount se o valor for <= 0.
+// Retorna ErrPaymentDeclined se o pagamento for recusado.
+func (p *PaymentProcessor) ProcessPayment(ctx context.Context, req ProcessPaymentRequest) (string, error) {
+    // ...
+}
+```
+
+**Dica**: Incluir exemplo de uso em godoc quando a função tiver uso não-óbvio:
+```go
+// ProcessPayment processa um pagamento e retorna o ID da transação.
+//
+// Exemplo:
+//
+//	txID, err := processor.ProcessPayment(ctx, ProcessPaymentRequest{
+//	    Amount: 1050,
+//	    Method: PaymentMethodCreditCard,
+//	})
+func (p *PaymentProcessor) ProcessPayment(ctx context.Context, req ProcessPaymentRequest) (string, error) {
+    // ...
+}
+```
+
+---
+
+### 2. Structs Exportadas
+
+**Todo struct exportado DEVE ter godoc. Campos não-óbvios DEVEM ter comentários.**
+
+✅ **BOM**:
+```go
+// Config contém configurações para inicializar o serviço.
+type Config struct {
+    BaseURL string
+    APIKey  string
+    
+    // Timeout define tempo máximo de espera por requisição.
+    // Zero significa sem timeout (não recomendado em produção).
+    Timeout time.Duration
+    
+    // MaxRetries define número máximo de tentativas em erro transitório.
+    // Padrão: 3
+    MaxRetries int
+}
+```
+
+---
+
+### 3. Constantes Exportadas
+
+**Constantes exportadas DEVEM ter godoc quando não-óbvias.**
+
+✅ **BOM** (grupo de constantes):
+```go
+// Códigos de status HTTP customizados da API.
+const (
+    // StatusBusinessError indica erro de validação de regra de negócio.
+    StatusBusinessError = 422
+    
+    // StatusRateLimited indica que o cliente excedeu o rate limit.
+    StatusRateLimited = 429
+)
+```
+
+✅ **BOM** (constante individual com contexto):
+```go
+const (
+    // maxRetries baseado no SLA: 99.9% de sucesso em 3 tentativas.
+    maxRetries = 3
+    
+    // retryDelay balanceia latência vs carga no serviço downstream.
+    retryDelay = 5 * time.Second
+)
+```
+
+---
+
+### 4. Interfaces Exportadas
+
+**Interfaces exportadas DEVEM ter godoc. Métodos DEVEM ter comentários.**
+
+✅ **BOM**:
+```go
+// Repository define operações de persistência para User.
+// Implementações devem ser thread-safe e suportar context.
+type Repository interface {
+    // Create persiste um novo usuário.
+    // Retorna ErrDuplicateEmail se email já existir.
+    Create(ctx context.Context, user User) error
+    
+    // FindByID busca usuário por ID.
+    // Retorna ErrNotFound se usuário não existir.
+    FindByID(ctx context.Context, id string) (User, error)
+}
+```
+
+---
+
+### 5. Variáveis de Erro Exportadas
+
+**Erros exportados DEVEM explicar quando usar e como tratar.**
+
+✅ **BOM**:
+```go
+// ErrNotFound indica que o recurso não foi encontrado.
+// Tratar retornando HTTP 404.
+var ErrNotFound = errors.New("resource not found")
+
+// ErrInvalidInput indica dados de entrada inválidos.
+// Tratar retornando HTTP 400 com detalhes.
+var ErrInvalidInput = errors.New("invalid input data")
+```
+
+---
+
+### 6. Package Comment
+
+**Todo package DEVE ter comentário descritivo no arquivo principal.**
+
+✅ **BOM**:
+```go
+// Package payment implementa processamento de pagamentos.
+// Suporta cartão, PIX e boleto via gateways externos.
+//
+// Exemplo básico:
+//
+//	processor := payment.NewProcessor(config)
+//	result, err := processor.Process(ctx, payment.Request{
+//	    Amount: 1000,
+//	    Method: payment.MethodCreditCard,
+//	})
+package payment
+```
+
+---
+
+## Comentários Especiais em Go
+
+### 1. Build Tags
+
+Comentários que controlam compilação condicional:
+
+✅ **BOM**:
+```go
+//go:build integration
+// +build integration
+
+// Arquivo com testes de integração que requerem dependências externas.
+// Execute: go test -tags=integration
+package payment_test
+```
+
+---
+
+### 2. Generated Code
+
+Indicar código gerado automaticamente:
+
+✅ **BOM**:
+```go
+// Code generated by protoc-gen-go. DO NOT EDIT.
+// versions:
+// 	protoc-gen-go v1.28.0
+// 	protoc        v3.19.4
+// source: payment.proto
+
+package payment
+```
+
+---
+
+### 3. Compiler Directives
+
+Comentários que instruem o compilador:
+
+```go
+//go:generate mockgen -source=repository.go -destination=mock_repository.go
+//go:embed templates/*.html
+//go:noinline
+```
+
+**Nota**: Não adicionar comentários explicativos extras, as diretivas são auto-explicativas.
+
+---
+
+## Formato de Comentários em Go
+
+### 1. Comentário de Linha Única
+```go
+// Este é um comentário de linha única
+```
+
+### 2. Comentário de Múltiplas Linhas
+```go
+// Primeira linha do comentário.
+// Segunda linha do comentário.
+// Terceira linha do comentário.
+```
+
+**Nota**: Go não usa `/* */` para comentários godoc. Use sempre `//`.
+
+### 3. Parágrafos em Godoc
+```go
+// Primeiro parágrafo descrevendo o símbolo.
+//
+// Segundo parágrafo com detalhes adicionais.
+// Pode ter múltiplas linhas.
+//
+// Terceiro parágrafo com exemplos ou notas.
+```
+
+---
+
+## Manutenção de Comentários em Go
+
+### Remover Comentários Desatualizados
+
+❌ **RUIM**:
+```go
+// TODO: Implementar lógica de retry
+// Isso será feito na Fase 2
+// Update: Agora usando exponential backoff
+// Update 2: Mudamos para circuit breaker
+func sendRequest() {
+    cb.Execute(func() error {
+        // ...
+    })
+}
+```
+
+✅ **BOM**:
+```go
+// sendRequest envia requisição protegida por circuit breaker.
+func sendRequest() {
+    cb.Execute(func() error {
+        // ...
+    })
+}
+```
+
+---
+
+## Ferramentas para Validar Comentários
+
+### Validar Godoc
+```bash
+# Visualizar documentação godoc
+go doc -all ./...
+
+# Gerar documentação HTML local
+godoc -http=:6060
+```
+
+### Linters para Comentários
+```bash
+# golangci-lint com regras de comentários
+golangci-lint run --enable=godot,godox,gocritic
+
+# revive para convenções de comentários
+revive -config revive.toml ./...
+```
+
+**Regras úteis:**
+- `godot`: Verifica se comentários terminam com ponto
+- `godox`: Encontra TODOs/FIXMEs
+- `gocritic`: Valida formato de comentários
+
+---
+
+## ✅ Checklist Específico de Go
+
+Antes de fazer commit:
+
+### Godoc Obrigatório:
+- [ ] Funções/métodos exportados têm godoc
+- [ ] Structs exportadas têm godoc
+- [ ] Interfaces exportadas têm godoc e métodos documentados
+- [ ] Constantes exportadas não-óbvias têm godoc
+- [ ] Variáveis de erro exportadas têm godoc
+- [ ] Package tem comment descritivo
+
+### Formato Godoc:
+- [ ] Comentário começa com nome exato do símbolo
+- [ ] Usa frases completas (maiúscula, ponto final)
+- [ ] Sem linha em branco entre comentário e código
+- [ ] Linha em branco separa parágrafos
+
+### Qualidade (aplica regra genérica):
+- [ ] Sem comentários óbvios ou redundantes
+- [ ] TODOs têm contexto completo
+- [ ] Comentários desatualizados removidos
+- [ ] Lógica não-óbvia explicada
+
+---
+
+## Referências Oficiais
+
+- [Effective Go - Commentary](https://go.dev/doc/effective_go#commentary)
+- [Go Code Review Comments - Doc Comments](https://github.com/golang/go/wiki/CodeReviewComments#doc-comments)
+- [Godoc: documenting Go code](https://go.dev/blog/godoc)
+- [Go Doc Comments Specification](https://go.dev/doc/comment)
+
+---
+
+**Última Atualização**: 15 de Novembro de 2025  
+**Versão**: 1.0 (Go-Specific)  
+**Baseado em**: `comments-standards.mdc` v2.0

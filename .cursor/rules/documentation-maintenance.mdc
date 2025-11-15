@@ -1,7 +1,7 @@
 ---
-alwaysApply: true
+description: Diretrizes para escrever comentários significativos, documentação inline e evitar ruído no código. Aplicar ao escrever ou revisar código para determinar quando adicionar ou remover comentários.
+alwaysApply: false
 ---
-
 # Manutenção de Documentação
 
 > **⚠️ OBRIGATÓRIO**: A documentação deve evoluir junto com o código. Toda mudança significativa requer revisão da documentação.
