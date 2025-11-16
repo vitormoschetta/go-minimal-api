@@ -97,8 +97,3 @@ Resultado: Imagem extremamente leve e segura.
 ├── Makefile         # Comandos de automação
 └── README.md        # Documentação
 ```
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
-
